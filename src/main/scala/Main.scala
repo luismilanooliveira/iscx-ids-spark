@@ -15,40 +15,58 @@ object SimpleApp {
 
     val datasetPath = "/var/spark/datasets/iscxids/labeled/"
     val days : Array[String] = Array(
-      "TestbedJun12",
-      "TestbedJun13",
-      "TestbedJun14",
-      "TestbedJun15-1",
-      "TestbedJun15-2",
-      "TestbedJun15-3",
-      "TestbedJun16-1",
-      "TestbedJun16-2",
-      "TestbedJun16-3",
-      "TestbedJun17-1",
-      "TestbedJun17-2",
-      "TestbedJun17-3")
+      "TestbedSatJun12",
+      "TestbedSunJun13",
+      "TestbedMonJun14",
+      "TestbedTueJun15-1",
+      "TestbedTueJun15-2",
+      "TestbedTueJun15-3",
+      "TestbedWedJun16-1",
+      "TestbedWedJun16-2",
+      "TestbedWedJun16-3",
+      "TestbedThuJun17-1",
+      "TestbedThuJun17-2",
+      "TestbedThuJun17-3")
     val xmlFiles = days.map(d => datasetPath + d + ".xml")
-    // flowsDays.foreach(println)
-
-    val zipped = days.zip(xmlFiles)
-    // val dataframes : Array[DataFrame] = zipped.map {d => sqlContext
-    //                                  .read
-    //                                  .format("com.databricks.spark.xml")
-    //                                  .option("rowTag",d._1).load(d._2)
-    // }
+    val zipped = days.map(_ + "Flows").zip(xmlFiles)
+    val dataframes : Array[DataFrame] = zipped.map {d => sqlContext
+                                     .read
+                                     .format("com.databricks.spark.xml")
+                                     .option("rowTag",d._1).load(d._2)
+    }
 
     // TestbedJun12
-  val jun12 = sqlContext.read
-                        .format("com.databricks.spark.xml")
-                        .option("rowTag",days(0))
-                        .load(xmlFiles(0))
-    // TestbedJun13
-    // TestbedJun14
-    // TestbedJun15
-    // TestbedJun16
-    // TestbedJun17
+    // val jun12 = sqlContext.read
+    //   .format("com.databricks.spark.xml")
+    //   .option("rowTag",days(0))
+    //   .load(xmlFiles(0))
+    // // TestbedJun13
+    // val jun13 = sqlContext.read
+    //   .format("com.databricks.spark.xml")
+    //   .option("rowTag",days(1) + "Flows")
+    //   .load(xmlFiles(1))
+    // // TestbedJun14
+    // val jun14 = sqlContext.read
+    //   .format("com.databricks.spark.xml")
+    //   .option("rowTag",days(2) + "Flows")
+    //   .load(xmlFiles(2))
+    // // TestbedJun15
+    // val jun15 = sqlContext.read
+    //   .format("com.databricks.spark.xml")
+    //   .option("rowTag",days(3) + "Flows")
+    //   .load(xmlFiles(3))
+    // // TestbedJun16
+    // val jun16 = sqlContext.read
+    //   .format("com.databricks.spark.xml")
+    //   .option("rowTag",days(4) + "Flows")
+    //   .load(xmlFiles(4))
+    // // TestbedJun17
+    // val jun13 = sqlContext.read
+    //   .format("com.databricks.spark.xml")
+    //   .option("rowTag",days(1) + "Flows")
+    //   .load(xmlFiles(2))
 
-    println(jun12.count())
+    println(dataframes(0).count())
     sc.stop()
   }
 }
