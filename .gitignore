@@ -23,4 +23,4 @@ project/plugins/project/
 
 # project specific
 data
-.ensime
+.ensime*
