@@ -29,11 +29,14 @@ object SimpleApp {
     val xmlFiles = days.map(d => datasetPath + d + ".xml")
     // flowsDays.foreach(println)
 
-    val d = days.zip(xmlFiles).map {d => sqlContext
+    val zipped = days.zip(xmlFiles)
+    val dataframes = zipped.map {d => sqlContext
                                      .read
                                      .format("com.databricks.spark.xml")
                                      .option("rowTag",d._1).load(d._2)
       }
+    println(dataframes.length)
+    // dataframes.foreach(println(_.count))
     sc.stop()
   }
 }
