@@ -3,6 +3,7 @@ package iscx
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
+import org.apache.spark.sql._
 
 object SimpleApp {
   def main(args: Array[String]) {
@@ -30,13 +31,13 @@ object SimpleApp {
     // flowsDays.foreach(println)
 
     val zipped = days.zip(xmlFiles)
-    val dataframes = zipped.map {d => sqlContext
+    val dataframes : Array[DataFrame] = zipped.map {d => sqlContext
                                      .read
                                      .format("com.databricks.spark.xml")
                                      .option("rowTag",d._1).load(d._2)
       }
     println(dataframes.length)
-    // dataframes.foreach(println(_.count))
+    dataframes.foreach((d : DataFrame) => println(d.count))
     sc.stop()
   }
 }
