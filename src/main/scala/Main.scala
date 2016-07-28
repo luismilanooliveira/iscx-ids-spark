@@ -31,13 +31,24 @@ object SimpleApp {
     // flowsDays.foreach(println)
 
     val zipped = days.zip(xmlFiles)
-    val dataframes : Array[DataFrame] = zipped.map {d => sqlContext
-                                     .read
-                                     .format("com.databricks.spark.xml")
-                                     .option("rowTag",d._1).load(d._2)
-      }
-    println(dataframes.length)
-    dataframes.foreach((d : DataFrame) => println(d.count))
+    // val dataframes : Array[DataFrame] = zipped.map {d => sqlContext
+    //                                  .read
+    //                                  .format("com.databricks.spark.xml")
+    //                                  .option("rowTag",d._1).load(d._2)
+    // }
+
+    // TestbedJun12
+  val jun12 = sqlContext.read
+                        .format("com.databricks.spark.xml")
+                        .option("rowTag",days(0))
+                        .load(xmlFiles(0))
+    // TestbedJun13
+    // TestbedJun14
+    // TestbedJun15
+    // TestbedJun16
+    // TestbedJun17
+
+    println(jun12.count())
     sc.stop()
   }
 }
