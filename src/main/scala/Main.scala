@@ -3,7 +3,6 @@ package iscx
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
-import com.databricks.spark.xml._
 
 object SimpleApp {
   def main(args: Array[String]) {
@@ -11,23 +10,30 @@ object SimpleApp {
                               .setMaster("local[4]")
     val sc = new SparkContext(conf)
     sc.setLogLevel("WARN")
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
     val datasetPath = "/var/spark/datasets/iscxids/labeled/"
     val days : Array[String] = Array(
-      "TestbedJun12.xml",
-      "TestbedJun13.xml",
-      "TestbedJun14.xml",
-      "TestbedJun15-1.xml",
-      "TestbedJun15-2.xml",
-      "TestbedJun15-3.xml",
-      "TestbedJun16-1.xml",
-      "TestbedJun16-2.xml",
-      "TestbedJun16-3.xml",
-      "TestbedJun17-1.xml",
-      "TestbedJun17-2.xml",
-      "TestbedJun17-3.xml")
-    val flows = days.map(d => datasetPath + d)
-    flows.foreach(println)
+      "TestbedJun12",
+      "TestbedJun13",
+      "TestbedJun14",
+      "TestbedJun15-1",
+      "TestbedJun15-2",
+      "TestbedJun15-3",
+      "TestbedJun16-1",
+      "TestbedJun16-2",
+      "TestbedJun16-3",
+      "TestbedJun17-1",
+      "TestbedJun17-2",
+      "TestbedJun17-3")
+    val xmlFiles = days.map(d => datasetPath + d + ".xml")
+    // flowsDays.foreach(println)
+
+    val d = days.zip(xmlFiles).map {d => sqlContext
+                                     .read
+                                     .format("com.databricks.spark.xml")
+                                     .option("rowTag",d._1).load(d._2)
+      }
     sc.stop()
   }
 }
