@@ -67,6 +67,7 @@ object SimpleApp {
     //   .load(xmlFiles(2))
 
     dataframes.foreach((d : DataFrame) => println(d.count))
+
     sc.stop()
   }
 }
