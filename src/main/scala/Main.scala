@@ -9,7 +9,7 @@ object SimpleApp {
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Simple Application")
                               .setMaster("local[4]")
-    val sc = new SparkContext(conf)
+    val sc = new SparkContext(conf).setLogLevel("WARN")
 
     val datasetPath = "/var/spark/datasets/iscxids/labeled/"
     val days : Array[String] = Array(
