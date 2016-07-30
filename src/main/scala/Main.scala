@@ -4,23 +4,32 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
+
 
 object SimpleApp {
-   def main(args: Array[String]) {
-
-     val datasetPath = args match {
-       case Array(p,_*) => args(0)
+  def main(args: Array[String]) {
+    val datasetPath = args match {
+       case Array(p,_*) => p
        case _           => "/var/spark/datasets/iscxids/labeled/"
      }
     val (sc,sqlContext) = initSpark()
 
     val dataframes = loadISCX(sqlContext,datasetPath)
-    // dataframes.foreach((d : DataFrame) => println(d.count))
-
+    dataframes.foreach { d =>
+      println("Dia: " + d._1)
+      println("Número de fluxos: " + d._2.count.toString)
+      val groupedByTag = d._2
+                            .groupBy("Tag")
+                            .agg(count("Tag").as("count"))
+      // val normal = groupedByTag.filter(""Tag".equals("Normal"))
+      println("Proporção normal/ataque: ")
+      groupedByTag.show
+    }
     sc.stop()
   }
 
-  def initSpark() : (SparkContext,SQLContext)= {
+  def initSpark() : (SparkContext,SQLContext) = {
     val conf = new SparkConf().setAppName("Simple Application")
       .setMaster("local[4]")
     val sc = new SparkContext(conf)
@@ -29,7 +38,7 @@ object SimpleApp {
     (sc,sqlContext)
   }
 
-  def loadISCX(sqlContext : SQLContext, path: String) : Array[DataFrame] = {
+  def loadISCX(sqlContext : SQLContext, path : String) : Array[(String, DataFrame)] = {
     val days : Array[String] = Array(
       "TestbedSatJun12",
       "TestbedSunJun13",
@@ -45,13 +54,13 @@ object SimpleApp {
       "TestbedThuJun17-3")
 
     val xmlFiles = days.map(d => path + d + ".xml")
-    val zipped = days.map(_ + "Flows").zip(xmlFiles)
+    val zipped = days.zip(xmlFiles)
 
-    zipped.map {d => sqlContext
-                              .read
-                              .format("com.databricks.spark.xml")
-                              .option("rowTag",d._1).load(d._2)
-    }
+    zipped.map {
+      d => (d._1, sqlContext
+                    .read
+                    .format("com.databricks.spark.xml")
+                    .option("rowTag",d._1 + "Flows").load(d._2))}
     // TestbedJun12
     // val jun12 = sqlContext.read
     //   .format("com.databricks.spark.xml")
