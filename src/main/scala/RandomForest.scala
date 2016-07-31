@@ -126,7 +126,8 @@ object RandomForest {
     val rf = new RandomForestClassifier()
       .setLabelCol("indexedLabel")
       .setFeaturesCol("indexedFeatures")
-      .setNumTrees(1000)
+      .setNumTrees(32)
+      .setMaxBins(1000)
 
     // Convert indexed labels back to original labels.
     val labelConverter = new IndexToString()
