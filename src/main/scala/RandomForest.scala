@@ -21,6 +21,7 @@ object RandomForest {
        case _           => "/var/spark/datasets/iscxids/labeled/"
      }
     val (sc,sqlContext) = initSpark()
+    // drop malformed?
     // Array[(String, DataFrame)]
     val dataframes  = loadISCX(sqlContext,datasetPath)
 
@@ -44,7 +45,7 @@ object RandomForest {
         , "totalDestinationPackets"
         , "totalSourceBytes"
         , "totalSourcePackets"
-      )
+      ).na.fill("nothing")
 
     // MinMax
     // val (dstByMin, dstByMax) = data.agg(min($"totalDestinationBytes"), max($"totalDestinationBytes")).first match {

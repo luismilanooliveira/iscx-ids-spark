@@ -19,17 +19,17 @@ object utils {
   def loadISCX(sqlContext : SQLContext, path : String) : Array[(String, DataFrame)] = {
     val days : Array[String] = Array(
       "TestbedSatJun12"
-      // , "TestbedSunJun13"
-      // , "TestbedMonJun14"
-      // , "TestbedTueJun15-1"
-      // , "TestbedTueJun15-2"
-      // , "TestbedTueJun15-3"
-      // , "TestbedWedJun16-1"
-      // , "TestbedWedJun16-2"
-      // , "TestbedWedJun16-3"
-      // , "TestbedThuJun17-1"
-      // , "TestbedThuJun17-2"
-      // , "TestbedThuJun17-3"
+    // , "TestbedSunJun13"
+    // , "TestbedMonJun14"
+    // , "TestbedTueJun15-1"
+    // , "TestbedTueJun15-2"
+    // , "TestbedTueJun15-3"
+    // , "TestbedWedJun16-1"
+    // , "TestbedWedJun16-2"
+    // , "TestbedWedJun16-3"
+    // , "TestbedThuJun17-1"
+    // , "TestbedThuJun17-2"
+    //  "TestbedThuJun17-3"
     )
 
     val xmlFiles = days.map(d => path + d + ".xml")
@@ -37,9 +37,13 @@ object utils {
 
     zipped.map {
       d => (d._1, sqlContext
-                    .read
-                    .format("com.databricks.spark.xml")
-                    .option("rowTag",d._1 + "Flows").load(d._2).cache())}
+              .read
+              .format("com.databricks.spark.xml")
+              .option("rowTag",d._1 + "Flows")
+              .load(d._2)
+              .na.fill("N/A")
+              .cache())
+    }
     // TestbedJun12
     // val jun12 = sqlContext.read
     //   .format("com.databricks.spark.xml")
