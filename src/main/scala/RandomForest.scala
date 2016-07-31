@@ -41,22 +41,22 @@ object RandomForest {
     // /MinMax
     val filteredData = sqlContext.createDataFrame(data.map { row =>
           Row(
-              row.get(0)  // tag
-            , row.get(1)  // appName
+              row.getString(0)  // tag
+            , row.getString(1)  // appName
             , row.getString(2).split("\\.").take(2).mkString(".")  // destination
-            , row.get(5)  // destinationPort
-            , row.get(6)  // destinationTCPFlagsDescription
-            , row.get(7)  // direction
-            , row.get(8)  // protocolName
+            , row.getLong(5)  // destinationPort
+            , row.getString(6)  // destinationTCPFlagsDescription
+            , row.getString(7)  // direction
+            , row.getString(8)  // protocolName
             , row.getString(9).split("\\.").take(2).mkString(".")  // destination
-            , row.get(12) // sourcePort
-            , row.get(13) // sourceTCPFlagsDescription
-            , row.get(14) // startDateTime
-            , row.get(15) // stopDateTime
-            , row.get(16) // totalDestinationBytes
-            , row.get(17) // totalDestinationPackets
-            , row.get(18) // totalSourceBytes
-            , row.get(19) // totalSourcePackets
+            , row.getLong(12) // sourcePort
+            , row.getString(13) // sourceTCPFlagsDescription
+            , row.getDate(14) // startDateTime
+            , row.getDate(15) // stopDateTime
+            , row.getLong(16) // totalDestinationBytes
+            , row.getLong(17) // totalDestinationPackets
+            , row.getLong(18) // totalSourceBytes
+            , row.getLong(19) // totalSourcePackets
             )
     }, data.schema)
 
