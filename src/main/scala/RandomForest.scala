@@ -21,14 +21,11 @@ object RandomForest {
        case _           => "/var/spark/datasets/iscxids/labeled/"
      }
     val (sc,sqlContext) = initSpark()
-    // drop malformed?
     // Array[(String, DataFrame)]
     val dataframes  = loadISCX(sqlContext,datasetPath)
 
-    // take only two first octets
-
-    val data = dataframes(0)._2
-      .select(
+     dataframes.foreach { d =>
+      val data = d._2.select(
           "Tag"
         , "appName"
         , "destination"
@@ -77,13 +74,8 @@ object RandomForest {
             , row.getLong(14) // totalSourceBytes
             , row.getLong(15) // totalSourcePackets
             )
-    }, data.schema).cache()
+    }, data.schema)
 
-
-    // filteredData.write
-    //   .format("com.databricks.spark.csv")
-    //   .option("header", "true")
-    // .save("/var/spark/day12.csv")
 
     // Transform the non-numerical features using the pipeline api
     val stringColumns = filteredData.columns
@@ -150,6 +142,12 @@ object RandomForest {
     val dataModel = preProcessers.fit(filteredData)
     val transformedData = dataModel.transform(filteredData)
 
+    transformedData.write
+      .format("com.databricks.spark.csv")
+      .option("header", "true")
+    .save("/var/spark/datasets/iscx-processed/" + d._1)
+
+
     val pipeline = new Pipeline()
       .setStages(stages)
 
@@ -166,7 +164,7 @@ object RandomForest {
     predictions.select("predictedLabel", "Tag", "features").show(5)
 
     val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
-    println("Learned classification forest model:\n" + rfModel.toDebugString)
+    println("Learned classification forest model:\n" + rfModel.toString)
 
     // // Select (prediction, true label) and compute test error
     val evaluator = new MulticlassClassificationEvaluator()
@@ -176,6 +174,7 @@ object RandomForest {
     val accuracy = evaluator.evaluate(predictions)
     println("Test Error = " + (1.0 - accuracy))
 
+    }
     sc.stop()
   }
 }
