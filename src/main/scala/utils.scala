@@ -18,18 +18,19 @@ object utils {
 
   def loadISCX(sqlContext : SQLContext, path : String) : Array[(String, DataFrame)] = {
     val days : Array[String] = Array(
-      "TestbedSatJun12",
-      "TestbedSunJun13",
-      "TestbedMonJun14",
-      "TestbedTueJun15-1",
-      "TestbedTueJun15-2",
-      "TestbedTueJun15-3",
-      "TestbedWedJun16-1",
-      "TestbedWedJun16-2",
-      "TestbedWedJun16-3",
-      "TestbedThuJun17-1",
-      "TestbedThuJun17-2",
-      "TestbedThuJun17-3")
+      "TestbedSatJun12"
+      // , "TestbedSunJun13"
+      // , "TestbedMonJun14"
+      // , "TestbedTueJun15-1"
+      // , "TestbedTueJun15-2"
+      // , "TestbedTueJun15-3"
+      // , "TestbedWedJun16-1"
+      // , "TestbedWedJun16-2"
+      // , "TestbedWedJun16-3"
+      // , "TestbedThuJun17-1"
+      // , "TestbedThuJun17-2"
+      // , "TestbedThuJun17-3"
+    )
 
     val xmlFiles = days.map(d => path + d + ".xml")
     val zipped = days.zip(xmlFiles)
