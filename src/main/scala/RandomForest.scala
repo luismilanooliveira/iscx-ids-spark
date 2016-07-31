@@ -4,6 +4,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import utils.{loadISCX, initSpark}
+import org.apache.spark.sql.Row
+
 
 import org.apache.spark.ml.{Pipeline, PipelineStage}
 import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
@@ -25,6 +27,18 @@ object RandomForest {
     // take only two first octets
 
     val data = dataframes(0)._2
+
+    // MinMax
+    val (dstByMin, dstByMax) = data.agg(min($"totalDestinationBytes"), max($"totalDestinationBytes")).first match {
+      case Row(x: Double, y: Double) => (x, y)
+    }
+
+    val scaledRange = lit(2) // Range of the scaled variable
+    val scaledMin = lit(-1)  // Min value of the scaled variable
+    val vNormalized = ($"totalDestinationBytes" - vMin) / (vMax - vMin) // v normalized to (0, 1) range
+
+    val vScaled = scaledRange * vNormalized + scaledMin
+    // /MinMax
     val filteredData = sqlContext.createDataFrame(data.map { row =>
           Row(
               row.get(0)  // tag
@@ -70,8 +84,8 @@ object RandomForest {
     // string vs long columns
 
     val assembler  = new VectorAssembler()
-      .setInputCols(stringColumns
-                      .map(cname => s"${cname}_index") ++ longColumns)
+      .setInputCols((stringColumns
+                      .map(cname => s"${cname}_index")) ++ longColumns)
       .setOutputCol("features")
 
     // Automatically identify categorical features, and index them.
@@ -80,8 +94,6 @@ object RandomForest {
       .setInputCol("features")
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
-    val stages : Array[PipelineStage] =
-      transformers :+ assembler :+ featureIndexer
 
     // val pipeline = new Pipeline().setStages(stages)
     // Split the data into training and test sets (30% held out for testing)
@@ -100,6 +112,9 @@ object RandomForest {
       .setLabels(labelIndexer.labels)
 
     // Chain indexers and forest in a Pipeline
+
+    val stages : Array[PipelineStage] =
+      transformers :+ assembler :+ featureIndexer
     val pipeline = new Pipeline()
       .setStages(stages ++
                  Array(labelIndexer, featureIndexer, rf, labelConverter))
