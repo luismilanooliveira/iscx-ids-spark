@@ -90,6 +90,7 @@ object RandomForest {
     val labelIndexer = new StringIndexer()
       .setInputCol("Tag")
       .setOutputCol("indexedLabel")
+      .fit(filteredData)
 
     // Transform the non-numerical features using the pipeline api
     val stringColumns = filteredData.columns
@@ -101,6 +102,7 @@ object RandomForest {
       .map(cname => new StringIndexer()
              .setInputCol(cname)
              .setOutputCol(s"${cname}_index")
+             .fit(filteredData)
     )
 
     val longColumns = filteredData.columns
@@ -114,11 +116,12 @@ object RandomForest {
       .setOutputCol("features")
 
     // Automatically identify categorical features, and index them.
-    // Set maxCategories so features with > 4 distinct values are treated as continuous.
+    // Set maxCategories so features with > 10 distinct values are treated as continuous.
     val featureIndexer = new VectorIndexer()
       .setInputCol("features")
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
+      .fit(filteredData)
 
     // Split the data into training and test sets (30% held out for testing)
 
