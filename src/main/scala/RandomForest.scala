@@ -70,8 +70,8 @@ object RandomForest {
             , row.getString(7).split("\\.").take(2).mkString(".")  // destination
             , row.getLong(8) // sourcePort
             , row.getString(9) // sourceTCPFlagsDescription
-            , row.getString(10) // startDateTime
-            , row.getString(11) // stopDateTime
+            , row.getString(10).drop(11).take(2) // startDateTime
+            , row.getString(11).drop(11).take(2)// stopDateTime
             , row.getLong(12) // totalDestinationBytes
             , row.getLong(13) // totalDestinationPackets
             , row.getLong(14) // totalSourceBytes
