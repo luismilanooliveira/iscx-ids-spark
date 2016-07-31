@@ -21,22 +21,16 @@ object utils {
       "TestbedSatJun12"
     , "TestbedSunJun13"
     , "TestbedMonJun14"
-    // , "TestbedTueJun15-1"
-    // , "TestbedTueJun15-2"
-    // , "TestbedTueJun15-3"
-    // , "TestbedWedJun16-1"
-    // , "TestbedWedJun16-2"
-    // , "TestbedWedJun16-3"
-    // , "TestbedThuJun17-1"
-    // , "TestbedThuJun17-2"
-    //  "TestbedThuJun17-3"
+    , "TestbedTueJun15"
+    , "TestbedWedJun16"
+    , "TestbedThuJun17"
     )
 
     val xmlFiles = days.map(d => path + d + ".xml")
     val zipped = days.zip(xmlFiles)
 
-    zipped.map {
-      d => (d._1.drop(10), sqlContext
+    zipped.take(3).map { d =>
+      (d._1.drop(10), sqlContext
               .read
               .format("com.databricks.spark.xml")
               .option("rowTag",d._1 + "Flows")
