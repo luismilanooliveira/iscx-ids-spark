@@ -80,10 +80,11 @@ object RandomForest {
     }, data.schema)
 
 
-    filteredData.write
-      .format("com.databricks.spark.csv")
-      .option("header", "true")
-      .save("/var/spark/day12.csv")
+    // filteredData.write
+    //   .format("com.databricks.spark.csv")
+    //   .option("header", "true")
+    // .save("/var/spark/day12.csv")
+
     // Index labels, adding metadata to the label column.
     // Fit on whole dataset to include all labels in index.
     val labelIndexer = new StringIndexer()
@@ -147,24 +148,24 @@ object RandomForest {
 
     val Array(trainingData, testData) = filteredData.randomSplit(Array(0.7, 0.3))
     // Train model.  This also runs the indexers.
-    // val model = pipeline.fit(trainingData)
+    val model = pipeline.fit(trainingData)
 
     // // Make predictions.
-    // val predictions = model.transform(testData)
+    val predictions = model.transform(testData)
 
     // // Select example rows to display.
-    // predictions.select("predictedLabel", "label", "features").show(5)
+    predictions.select("predictedLabel", "label", "features").show(5)
 
     // // Select (prediction, true label) and compute test error
-    // val evaluator = new MulticlassClassificationEvaluator()
-    //   .setLabelCol("indexedLabel")
-    //   .setPredictionCol("prediction")
-    //   .setMetricName("precision")
-    // val accuracy = evaluator.evaluate(predictions)
-    // println("Test Error = " + (1.0 - accuracy))
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("indexedLabel")
+      .setPredictionCol("prediction")
+      .setMetricName("precision")
+    val accuracy = evaluator.evaluate(predictions)
+    println("Test Error = " + (1.0 - accuracy))
 
-    // val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
-    // println("Learned classification forest model:\n" + rfModel.toDebugString)
+    val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
+    println("Learned classification forest model:\n" + rfModel.toDebugString)
 
     sc.stop()
   }
