@@ -36,13 +36,12 @@ object utils {
     val zipped = days.zip(xmlFiles)
 
     zipped.map {
-      d => (d._1, sqlContext
+      d => (d._1.drop(10), sqlContext
               .read
               .format("com.databricks.spark.xml")
               .option("rowTag",d._1 + "Flows")
               .load(d._2)
-              .na.fill("N/A")
-              .cache())
+              )
     }
     // TestbedJun12
     // val jun12 = sqlContext.read
