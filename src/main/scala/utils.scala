@@ -29,7 +29,7 @@ object utils {
     val xmlFiles = days.map(d => path + d + ".xml")
     val zipped = days.zip(xmlFiles)
 
-    zipped.take(3).map { d =>
+    zipped.map { d =>
       (d._1.drop(10), sqlContext
               .read
               .format("com.databricks.spark.xml")
