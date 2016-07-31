@@ -21,7 +21,30 @@ object RandomForest {
     val (sc,sqlContext) = initSpark()
     // Array[(String, DataFrame)]
     val dataframes  = loadISCX(sqlContext,datasetPath)
+
+    // take only two first octets
+
     val data = dataframes(0)._2
+    val filteredData = sqlContext.createDataFrame(data.map { row =>
+          Row(
+              row.get(0)  // tag
+            , row.get(1)  // appName
+            , row.getString(2).split("\\.").take(2).mkString(".")  // destination
+            , row.get(5)  // destinationPort
+            , row.get(6)  // destinationTCPFlagsDescription
+            , row.get(7)  // direction
+            , row.get(8)  // protocolName
+            , row.getString(9).split("\\.").take(2).mkString(".")  // destination
+            , row.get(12) // sourcePort
+            , row.get(13) // sourceTCPFlagsDescription
+            , row.get(14) // startDateTime
+            , row.get(15) // stopDateTime
+            , row.get(16) // totalDestinationBytes
+            , row.get(17) // totalDestinationPackets
+            , row.get(18) // totalSourceBytes
+            , row.get(19) // totalSourcePackets
+            )
+    }, data.schema)
 
     // Index labels, adding metadata to the label column.
     // Fit on whole dataset to include all labels in index.
@@ -34,13 +57,18 @@ object RandomForest {
     val stringColumns = data.columns
       .filter(!_.contains("Payload"))
       .filter(!_.contains("total"))
-    val longColumns = data.columns.filter(_.contains("total"))
 
     val transformers: Array[PipelineStage] = stringColumns
       .map(cname => new StringIndexer()
-        .setInputCol(cname)
-        .setOutputCol(s"${cname}_index")
-      )
+             .setInputCol(cname)
+             .setOutputCol(s"${cname}_index")
+    )
+
+    val longColumns = data.columns.filter(_.contains("total"))
+
+    // minMax
+    // string vs long columns
+
     val assembler  = new VectorAssembler()
       .setInputCols(stringColumns
                       .map(cname => s"${cname}_index") ++ longColumns)
@@ -52,9 +80,8 @@ object RandomForest {
       .setInputCol("features")
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
-      .fit(data)
     val stages : Array[PipelineStage] =
-      transformers :+ assembler
+      transformers :+ assembler :+ featureIndexer
 
     // val pipeline = new Pipeline().setStages(stages)
     // Split the data into training and test sets (30% held out for testing)
