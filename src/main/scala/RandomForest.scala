@@ -85,43 +85,40 @@ object RandomForest {
     //   .option("header", "true")
     // .save("/var/spark/day12.csv")
 
-    // Index labels, adding metadata to the label column.
-    // Fit on whole dataset to include all labels in index.
-    val labelIndexer = new StringIndexer()
-      .setInputCol("Tag")
-      .setOutputCol("indexedLabel")
-      .fit(filteredData)
-
     // Transform the non-numerical features using the pipeline api
     val stringColumns = filteredData.columns
       .filter(!_.contains("Payload"))
       .filter(!_.contains("total"))
       .filter(!_.contains("Port"))
 
-    val transformers: Array[PipelineStage] = stringColumns
-      .map(cname => new StringIndexer()
-             .setInputCol(cname)
-             .setOutputCol(s"${cname}_index")
-             .fit(filteredData)
-    )
-
     val longColumns = filteredData.columns
       .filter(c => c.contains("total") || c.contains("Port"))
 
     // minMax
 
+    // Index labels, adding metadata to the label column.
+    // Fit on whole dataset to include all labels in index.
+    val labelIndexer = new StringIndexer()
+      .setInputCol("Tag")
+      .setOutputCol("indexedLabel")
+
+    val transformers: Array[PipelineStage] = stringColumns
+      .map(cname => new StringIndexer()
+             .setInputCol(cname)
+             .setOutputCol(s"${cname}_index")
+    )
+
     val assembler  = new VectorAssembler()
       .setInputCols((stringColumns
-                      .map(cname => s"${cname}_index")) ++ longColumns)
+                       .map(cname => s"${cname}_index")) ++ longColumns)
       .setOutputCol("features")
 
     // Automatically identify categorical features, and index them.
     // Set maxCategories so features with > 10 distinct values are treated as continuous.
     val featureIndexer = new VectorIndexer()
-      .setInputCol("features")
+      .setOutputCol("features")
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
-      .fit(filteredData)
 
     // Split the data into training and test sets (30% held out for testing)
 
@@ -141,8 +138,8 @@ object RandomForest {
 
     val stages : Array[PipelineStage] =
         Array(labelIndexer) ++
-        transformers :+ // string columns
-        assembler :+ //
+        transformers :+
+        assembler :+
         featureIndexer :+
         rf
     val pipeline = new Pipeline()
