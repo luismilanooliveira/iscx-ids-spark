@@ -63,12 +63,12 @@ object RandomForest {
               row.getString(0)  // tag
             , row.getString(1)  // appName
             , row.getString(2).split("\\.").take(2).mkString(".")  // destination
-            , row.getString(3)  // destinationPort
+            , row.getLong(3)  // destinationPort
             , row.getString(4)  // destinationTCPFlagsDescription
             , row.getString(5)  // direction
             , row.getString(6)  // protocolName
             , row.getString(7).split("\\.").take(2).mkString(".")  // destination
-            , row.getString(8) // sourcePort
+            , row.getLong(8) // sourcePort
             , row.getString(9) // sourceTCPFlagsDescription
             , row.getString(10).drop(11).take(2) // startDateTime
             , row.getString(11).drop(11).take(2)// stopDateTime
@@ -95,6 +95,7 @@ object RandomForest {
     val stringColumns = filteredData.columns
       .filter(!_.contains("Payload"))
       .filter(!_.contains("total"))
+      .filter(!_.contains("Port"))
 
     val transformers: Array[PipelineStage] = stringColumns
       .map(cname => new StringIndexer()
@@ -102,7 +103,8 @@ object RandomForest {
              .setOutputCol(s"${cname}_index")
     )
 
-    val longColumns = filteredData.columns.filter(_.contains("total"))
+    val longColumns = filteredData.columns
+      .filter(c => c.contains("total") || c.contains("Port"))
 
     // minMax
 
@@ -136,8 +138,8 @@ object RandomForest {
 
     val stages : Array[PipelineStage] =
         Array(labelIndexer) ++
-        transformers :+
-        assembler :+
+        transformers :+ // string columns
+        assembler :+ //
         featureIndexer :+
         rf
     val pipeline = new Pipeline()
