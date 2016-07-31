@@ -27,6 +27,24 @@ object RandomForest {
     // take only two first octets
 
     val data = dataframes(0)._2
+      .select(
+          "Tag"
+        , "appName"
+        , "destination"
+        , "destinationPort"
+        , "destinationTCPFlagsDescription"
+        , "direction"
+        , "protocolName"
+        , "source"
+        , "sourcePort"
+        , "sourceTCPFlagsDescription"
+        , "startDateTime"
+        , "stopDateTime"
+        , "totalDestinationBytes"
+        , "totalDestinationPackets"
+        , "totalSourceBytes"
+        , "totalSourcePackets"
+      )
 
     // MinMax
     // val (dstByMin, dstByMax) = data.agg(min($"totalDestinationBytes"), max($"totalDestinationBytes")).first match {
@@ -44,19 +62,19 @@ object RandomForest {
               row.getString(0)  // tag
             , row.getString(1)  // appName
             , row.getString(2).split("\\.").take(2).mkString(".")  // destination
-            , row.getLong(5)  // destinationPort
-            , row.getString(6)  // destinationTCPFlagsDescription
-            , row.getString(7)  // direction
-            , row.getString(8)  // protocolName
-            , row.getString(9).split("\\.").take(2).mkString(".")  // destination
-            , row.getLong(12) // sourcePort
-            , row.getString(13) // sourceTCPFlagsDescription
-            , row.getString(14) // startDateTime
-            , row.getString(15) // stopDateTime
-            , row.getLong(16) // totalDestinationBytes
-            , row.getLong(17) // totalDestinationPackets
-            , row.getLong(18) // totalSourceBytes
-            , row.getLong(19) // totalSourcePackets
+            , row.getLong(3)  // destinationPort
+            , row.getString(4)  // destinationTCPFlagsDescription
+            , row.getString(5)  // direction
+            , row.getString(6)  // protocolName
+            , row.getString(7).split("\\.").take(2).mkString(".")  // destination
+            , row.getLong(8) // sourcePort
+            , row.getString(9) // sourceTCPFlagsDescription
+            , row.getString(10) // startDateTime
+            , row.getString(11) // stopDateTime
+            , row.getLong(12) // totalDestinationBytes
+            , row.getLong(13) // totalDestinationPackets
+            , row.getLong(14) // totalSourceBytes
+            , row.getLong(15) // totalSourcePackets
             )
     }, data.schema)
 
