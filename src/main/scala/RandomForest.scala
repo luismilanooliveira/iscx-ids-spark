@@ -137,18 +137,23 @@ object RandomForest {
 
     // Chain indexers and forest in a Pipeline
 
-    val stages : Array[PipelineStage] =
+    val transformationStages : Array[PipelineStage] =
         Array(labelIndexer) ++
         transformers :+
         assembler :+
-        featureIndexer :+
-        rf :+
-        labelConverter
+        featureIndexer
+    val preProcessers = new Pipeline().setStages(transformationStages)
+
+    val stages : Array[PipelineStage] =
+      Array(rf,labelConverter)
+
+    val dataModel = preProcessers.fit(filteredData)
+    val transformedData = dataModel.transform(filteredData)
 
     val pipeline = new Pipeline()
       .setStages(stages)
 
-    val Array(trainingData, testData) = filteredData.randomSplit(Array(0.7, 0.3))
+    val Array(trainingData, testData) = transformedData.randomSplit(Array(0.7, 0.3))
     trainingData.cache()
     testData.cache()
     // Train model.  This also runs the indexers.
