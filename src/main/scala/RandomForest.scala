@@ -166,7 +166,8 @@ object RandomForest {
     val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
     println("Learned classification forest model:\n" + rfModel.toDebugString)
     val featuresImportance = rfModel.featureImportances.toArray.mkString(",")
-    println(s"Feature Importances for $d._1: featuresImportance")
+    println(s"Feature Importances for" + $d._1)
+    println(featuresImportance)
 
     // // Select (prediction, true label) and compute test error
     val evaluator = new MulticlassClassificationEvaluator()
