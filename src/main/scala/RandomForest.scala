@@ -90,7 +90,6 @@ object RandomForest {
     val labelIndexer = new StringIndexer()
       .setInputCol("Tag")
       .setOutputCol("indexedLabel")
-      .fit(filteredData)
 
     // Transform the non-numerical features using the pipeline api
     val stringColumns = filteredData.columns
@@ -118,7 +117,6 @@ object RandomForest {
       .setInputCol("features")
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
-      .fit(filteredData)
 
     // Split the data into training and test sets (30% held out for testing)
 
