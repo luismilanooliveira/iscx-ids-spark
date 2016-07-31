@@ -160,6 +160,9 @@ object RandomForest {
     // // Select example rows to display.
     predictions.select("predictedLabel", "Tag", "features").show(5)
 
+    val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
+    println("Learned classification forest model:\n" + rfModel.toDebugString)
+
     // // Select (prediction, true label) and compute test error
     val evaluator = new MulticlassClassificationEvaluator()
       .setLabelCol("indexedLabel")
@@ -168,11 +171,6 @@ object RandomForest {
     val accuracy = evaluator.evaluate(predictions)
     println("Test Error = " + (1.0 - accuracy))
 
-    val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
-    println("Learned classification forest model:\n" + rfModel.toDebugString)
-
     sc.stop()
   }
-
-
 }
