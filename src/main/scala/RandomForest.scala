@@ -87,7 +87,7 @@ object RandomForest {
 
     val assembler  = new VectorAssembler()
       .setInputCols((stringColumns
-                      .map(cname => s"${cname}_index")) ++ longColumns)
+                      .map(cname => s"${cname}_index"))) //++ longColumns)
       .setOutputCol("features")
 
     // Automatically identify categorical features, and index them.

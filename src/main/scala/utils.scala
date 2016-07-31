@@ -9,6 +9,7 @@ object utils {
   def initSpark() : (SparkContext,SQLContext) = {
     val conf = new SparkConf().setAppName("Simple Application")
       .setMaster("spark://10.90.67.77:7077")
+      // .setMaster("local[4]")
     val sc = new SparkContext(conf)
     sc.setLogLevel("WARN")
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
