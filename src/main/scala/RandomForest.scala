@@ -63,12 +63,12 @@ object RandomForest {
               row.getString(0)  // tag
             , row.getString(1)  // appName
             , row.getString(2).split("\\.").take(2).mkString(".")  // destination
-            , row.getLong(3)  // destinationPort
+            , row.getString(3)  // destinationPort
             , row.getString(4)  // destinationTCPFlagsDescription
             , row.getString(5)  // direction
             , row.getString(6)  // protocolName
             , row.getString(7).split("\\.").take(2).mkString(".")  // destination
-            , row.getLong(8) // sourcePort
+            , row.getString(8) // sourcePort
             , row.getString(9) // sourceTCPFlagsDescription
             , row.getString(10).drop(11).take(2) // startDateTime
             , row.getString(11).drop(11).take(2)// stopDateTime
