@@ -45,7 +45,7 @@ object RandomForest {
         , "totalDestinationPackets"
         , "totalSourceBytes"
         , "totalSourcePackets"
-      ).na.fill("nothing")
+      ).na.fill("N/A")
 
     // MinMax
     // val (dstByMin, dstByMax) = data.agg(min($"totalDestinationBytes"), max($"totalDestinationBytes")).first match {
@@ -77,7 +77,7 @@ object RandomForest {
             , row.getLong(14) // totalSourceBytes
             , row.getLong(15) // totalSourcePackets
             )
-    }, data.schema)
+    }, data.schema).cache()
 
 
     // filteredData.write
@@ -106,7 +106,6 @@ object RandomForest {
     val longColumns = filteredData.columns.filter(_.contains("total"))
 
     // minMax
-    // string vs long columns
 
     val assembler  = new VectorAssembler()
       .setInputCols((stringColumns
@@ -147,6 +146,8 @@ object RandomForest {
       .setStages(stages)
 
     val Array(trainingData, testData) = filteredData.randomSplit(Array(0.7, 0.3))
+    trainingData.cache()
+    testData.cache()
     // Train model.  This also runs the indexers.
     val model = pipeline.fit(trainingData)
 
