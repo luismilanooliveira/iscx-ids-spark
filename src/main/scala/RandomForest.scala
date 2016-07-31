@@ -78,17 +78,16 @@ object RandomForest {
             )
     }, data.schema)
 
-    val Array(trainingData, testData) = filteredData.randomSplit(Array(0.7, 0.3))
 
     // Index labels, adding metadata to the label column.
     // Fit on whole dataset to include all labels in index.
     val labelIndexer = new StringIndexer()
       .setInputCol("Tag")
       .setOutputCol("indexedLabel")
-      .fit(data)
+      .fit(filteredData)
 
     // Transform the non-numerical features using the pipeline api
-    val stringColumns = data.columns
+    val stringColumns = filteredData.columns
       .filter(!_.contains("Payload"))
       .filter(!_.contains("total"))
 
@@ -98,14 +97,14 @@ object RandomForest {
              .setOutputCol(s"${cname}_index")
     )
 
-    val longColumns = data.columns.filter(_.contains("total"))
+    val longColumns = filteredData.columns.filter(_.contains("total"))
 
     // minMax
     // string vs long columns
 
     val assembler  = new VectorAssembler()
       .setInputCols((stringColumns
-                      .map(cname => s"${cname}_index"))) //++ longColumns)
+                      .map(cname => s"${cname}_index")) ++ longColumns)
       .setOutputCol("features")
 
     // Automatically identify categorical features, and index them.
@@ -141,6 +140,7 @@ object RandomForest {
     val pipeline = new Pipeline()
       .setStages(stages)
 
+    val Array(trainingData, testData) = filteredData.randomSplit(Array(0.7, 0.3))
     // Train model.  This also runs the indexers.
     val model = pipeline.fit(trainingData)
 
