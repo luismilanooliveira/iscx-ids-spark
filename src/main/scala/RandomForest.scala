@@ -133,7 +133,7 @@ object RandomForest {
     val labelConverter = new IndexToString()
       .setInputCol("prediction")
       .setOutputCol("predictedLabel")
-      // .setLabels(labelIndexer.labels)
+      .setLabels(Array("Normal","Attack"))
 
     // Chain indexers and forest in a Pipeline
 
@@ -142,7 +142,9 @@ object RandomForest {
         transformers :+
         assembler :+
         featureIndexer :+
-        rf
+        rf :+
+        labelConverter
+
     val pipeline = new Pipeline()
       .setStages(stages)
 
