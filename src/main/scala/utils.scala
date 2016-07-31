@@ -19,8 +19,8 @@ object utils {
   def loadISCX(sqlContext : SQLContext, path : String) : Array[(String, DataFrame)] = {
     val days : Array[String] = Array(
       "TestbedSatJun12"
-    // , "TestbedSunJun13"
-    // , "TestbedMonJun14"
+    , "TestbedSunJun13"
+    , "TestbedMonJun14"
     // , "TestbedTueJun15-1"
     // , "TestbedTueJun15-2"
     // , "TestbedTueJun15-3"
