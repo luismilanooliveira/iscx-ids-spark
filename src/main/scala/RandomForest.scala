@@ -118,6 +118,7 @@ object RandomForest {
       .setInputCol("features")
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
+      .fit(filteredData)
 
     // Split the data into training and test sets (30% held out for testing)
 
