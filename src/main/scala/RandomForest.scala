@@ -29,15 +29,15 @@ object RandomForest {
     val data = dataframes(0)._2
 
     // MinMax
-    val (dstByMin, dstByMax) = data.agg(min($"totalDestinationBytes"), max($"totalDestinationBytes")).first match {
-      case Row(x: Double, y: Double) => (x, y)
-    }
+    // val (dstByMin, dstByMax) = data.agg(min($"totalDestinationBytes"), max($"totalDestinationBytes")).first match {
+    //   case Row(x: Double, y: Double) => (x, y)
+    // }
 
-    val scaledRange = lit(2) // Range of the scaled variable
-    val scaledMin = lit(-1)  // Min value of the scaled variable
-    val vNormalized = ($"totalDestinationBytes" - vMin) / (vMax - vMin) // v normalized to (0, 1) range
+    // val scaledRange = lit(1) // Range of the scaled variable
+    // val scaledMin = lit(0)  // Min value of the scaled variable
+    // val vNormalized = ($"totalDestinationBytes" - vMin) / (vMax - vMin) // v normalized to (0, 1) range
 
-    val vScaled = scaledRange * vNormalized + scaledMin
+    // val vScaled = scaledRange * vNormalized + scaledMin
     // /MinMax
     val filteredData = sqlContext.createDataFrame(data.map { row =>
           Row(
@@ -59,6 +59,8 @@ object RandomForest {
             , row.get(19) // totalSourcePackets
             )
     }, data.schema)
+
+    val Array(trainingData, testData) = filteredData.randomSplit(Array(0.7, 0.3))
 
     // Index labels, adding metadata to the label column.
     // Fit on whole dataset to include all labels in index.
@@ -95,9 +97,7 @@ object RandomForest {
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
 
-    // val pipeline = new Pipeline().setStages(stages)
     // Split the data into training and test sets (30% held out for testing)
-    val Array(trainingData, testData) = data.randomSplit(Array(0.7, 0.3))
 
     // Train a RandomForest model.
     val rf = new RandomForestClassifier()
@@ -114,10 +114,14 @@ object RandomForest {
     // Chain indexers and forest in a Pipeline
 
     val stages : Array[PipelineStage] =
-      transformers :+ assembler :+ featureIndexer
+        Array(labelIndexer) ++
+        transformers :+
+        assembler :+
+        featureIndexer :+
+        rf :+
+        labelConverter
     val pipeline = new Pipeline()
-      .setStages(stages ++
-                 Array(labelIndexer, featureIndexer, rf, labelConverter))
+      .setStages(stages)
 
     // Train model.  This also runs the indexers.
     val model = pipeline.fit(trainingData)
@@ -136,7 +140,7 @@ object RandomForest {
     val accuracy = evaluator.evaluate(predictions)
     println("Test Error = " + (1.0 - accuracy))
 
-    val rfModel = model.stages(2).asInstanceOf[RandomForestClassificationModel]
+    val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
     println("Learned classification forest model:\n" + rfModel.toDebugString)
 
     sc.stop()
