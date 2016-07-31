@@ -116,7 +116,7 @@ object RandomForest {
     // Automatically identify categorical features, and index them.
     // Set maxCategories so features with > 10 distinct values are treated as continuous.
     val featureIndexer = new VectorIndexer()
-      .setOutputCol("features")
+      .setInputCol("features")
       .setOutputCol("indexedFeatures")
       .setMaxCategories(10)
 
