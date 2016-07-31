@@ -5,10 +5,10 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import utils.{loadISCX, initSpark}
 
-import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.{Pipeline, PipelineStage}
 import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer, VectorAssembler}
 
 
 
@@ -29,14 +29,34 @@ object RandomForest {
       .setInputCol("Tag")
       .setOutputCol("indexedLabel")
       .fit(data)
+
+    // Transform the non-numerical features using the pipeline api
+    val stringColumns = data.columns
+      .filter(!_.contains("Payload"))
+      .filter(!_.contains("total"))
+    val longColumns = data.columns.filter(_.contains("total"))
+
+    val transformers: Array[PipelineStage] = stringColumns
+      .map(cname => new StringIndexer()
+        .setInputCol(cname)
+        .setOutputCol(s"${cname}_index")
+      )
+    val assembler  = new VectorAssembler()
+      .setInputCols(stringColumns
+                      .map(cname => s"${cname}_index") ++ longColumns)
+      .setOutputCol("features")
+
     // Automatically identify categorical features, and index them.
     // Set maxCategories so features with > 4 distinct values are treated as continuous.
     val featureIndexer = new VectorIndexer()
       .setInputCol("features")
       .setOutputCol("indexedFeatures")
-      .setMaxCategories(4)
+      .setMaxCategories(10)
       .fit(data)
+    val stages : Array[PipelineStage] =
+      transformers :+ assembler
 
+    // val pipeline = new Pipeline().setStages(stages)
     // Split the data into training and test sets (30% held out for testing)
     val Array(trainingData, testData) = data.randomSplit(Array(0.7, 0.3))
 
@@ -54,7 +74,8 @@ object RandomForest {
 
     // Chain indexers and forest in a Pipeline
     val pipeline = new Pipeline()
-      .setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
+      .setStages(stages ++
+                 Array(labelIndexer, featureIndexer, rf, labelConverter))
 
     // Train model.  This also runs the indexers.
     val model = pipeline.fit(trainingData)
