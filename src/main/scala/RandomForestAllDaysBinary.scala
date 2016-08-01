@@ -144,10 +144,10 @@ object RandomForestAllDaysBinary {
     val dataModel = preProcessers.fit(filteredData)
     val transformedData = dataModel.transform(filteredData)
 
-    transformedData.write
-      .format("com.databricks.spark.csv")
-      .option("header", "true")
-    .save("/var/spark/datasets/iscx-processed/alldays")
+    // transformedData.write
+    //   .format("com.databricks.spark.csv")
+    //   .option("header", "true")
+    // .save("/var/spark/datasets/iscx-processed/alldays")
 
 
     val pipeline = new Pipeline()
