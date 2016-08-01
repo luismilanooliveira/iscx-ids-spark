@@ -84,6 +84,7 @@ object RandomForestIndividualDays {
       .filter(!_.contains("Payload"))
       .filter(!_.contains("total"))
       .filter(!_.contains("Port"))
+      .filter(!_.contains("Tag"))
 
     val longColumns = filteredData.columns
       .filter(c => c.contains("total") || c.contains("Port"))

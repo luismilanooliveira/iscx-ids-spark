@@ -28,7 +28,7 @@ object RandomForestCluster {
     // Array[(String, DataFrame)]
     val dataframes  = loadISCX(sqlContext,datasetPath)
 
-     Array(dataframes(2)).foreach { d =>
+     Array(dataframes(0)).foreach { d =>
       val data = d._2.select(
           "Tag"
         , "appName"
@@ -86,6 +86,7 @@ object RandomForestCluster {
       .filter(!_.contains("Payload"))
       .filter(!_.contains("total"))
       .filter(!_.contains("Port"))
+      .filter(!_.contains("Tag"))
 
     val longColumns = filteredData.columns
       .filter(c => c.contains("total") || c.contains("Port"))
