@@ -14,7 +14,7 @@ import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer,
 
 
 
-object RandomForest {
+object RandomForestAllDaysBinary {
   def main(args: Array[String]) {
     val datasetPath = args match {
        case Array(p,_*) => p
@@ -22,10 +22,11 @@ object RandomForest {
      }
     val (sc,sqlContext) = initSpark()
     // Array[(String, DataFrame)]
-    val dataframes  = loadISCX(sqlContext,datasetPath)
+    val dataframes  = loadISCX(sqlContext,datasetPath).map(_._2)
+    val allDays = dataframes.reduceLeft((a,b) =>
+      a.unionAll(b))
 
-     Array(dataframes(2)).foreach { d =>
-      val data = d._2.select(
+    val data = allDays.select(
           "Tag"
         , "appName"
         , "destination"
@@ -145,7 +146,7 @@ object RandomForest {
     transformedData.write
       .format("com.databricks.spark.csv")
       .option("header", "true")
-    .save("/var/spark/datasets/iscx-processed/" + d._1)
+    .save("/var/spark/datasets/iscx-processed/alldays")
 
 
     val pipeline = new Pipeline()
@@ -164,9 +165,9 @@ object RandomForest {
     predictions.select("predictedLabel", "Tag", "features").show(5)
 
     val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
-    println("Learned classification forest model:\n" + rfModel.toDebugString)
+    println("Learned classification forest model:\n" + rfModel.toString)
     val featuresImportance = rfModel.featureImportances.toArray.mkString(",")
-    println(s"Feature Importances for" + d._1)
+    println(s"Feature Importances")
     println(featuresImportance)
 
     // // Select (prediction, true label) and compute test error
@@ -177,7 +178,6 @@ object RandomForest {
     val accuracy = evaluator.evaluate(predictions)
     println("Test Error = " + (1.0 - accuracy))
 
-    }
     sc.stop()
   }
 }

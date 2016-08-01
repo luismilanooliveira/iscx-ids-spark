@@ -6,6 +6,8 @@ import org.apache.spark.sql.functions._
 import utils.{loadISCX, initSpark}
 import org.apache.spark.sql.Row
 
+import scala.collection.mutable.{ArrayBuffer}
+
 
 import org.apache.spark.ml.{Pipeline, PipelineStage}
 import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
@@ -14,7 +16,7 @@ import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer,
 
 
 
-object RandomForest {
+object RandomForestIndividualDays {
   def main(args: Array[String]) {
     val datasetPath = args match {
        case Array(p,_*) => p
@@ -23,8 +25,8 @@ object RandomForest {
     val (sc,sqlContext) = initSpark()
     // Array[(String, DataFrame)]
     val dataframes  = loadISCX(sqlContext,datasetPath)
-
-     Array(dataframes(2)).foreach { d =>
+    var featuresPerDay = new ArrayBuffer[(String, String)]()
+     dataframes.foreach { d =>
       val data = d._2.select(
           "Tag"
         , "appName"
@@ -166,6 +168,7 @@ object RandomForest {
     val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
     println("Learned classification forest model:\n" + rfModel.toDebugString)
     val featuresImportance = rfModel.featureImportances.toArray.mkString(",")
+    featuresPerDay += ((d._1, featuresImportance))
     println(s"Feature Importances for" + d._1)
     println(featuresImportance)
 
@@ -178,6 +181,8 @@ object RandomForest {
     println("Test Error = " + (1.0 - accuracy))
 
     }
+    println("Features Importance for individual days:")
+    featuresPerDay.foreach(println)
     sc.stop()
   }
 }
