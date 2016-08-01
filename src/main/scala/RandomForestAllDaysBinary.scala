@@ -166,7 +166,7 @@ object RandomForestAllDaysBinary {
     predictions.select("predictedLabel", "Tag", "features").show(5)
 
     val rfModel = model.stages.init.last.asInstanceOf[RandomForestClassificationModel]
-    println("Learned classification forest model:\n" + rfModel.toString)
+    println("Learned classification forest model:\n" + rfModel.toDebugString)
     val featuresImportance = rfModel.featureImportances.toArray.mkString(",")
     println(s"Feature Importances")
     println(featuresImportance)
