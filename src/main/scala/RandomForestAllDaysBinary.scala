@@ -121,7 +121,7 @@ object RandomForestAllDaysBinary {
       .setLabelCol("indexedLabel")
       .setFeaturesCol("indexedFeatures")
       .setNumTrees(32)
-      .setMaxBins(10000)
+      .setMaxBins(20000)
 
     // Convert indexed labels back to original labels.
     val labelConverter = new IndexToString()
