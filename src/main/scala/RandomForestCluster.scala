@@ -1,6 +1,7 @@
 package iscx
 
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkConf
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import utils.{loadISCX, initSpark}
@@ -12,15 +13,18 @@ import org.apache.spark.ml.classification.{RandomForestClassificationModel, Rand
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer, VectorAssembler}
 
-
-
-object RandomForest {
+object RandomForestCluster {
   def main(args: Array[String]) {
     val datasetPath = args match {
        case Array(p,_*) => p
        case _           => "/var/spark/datasets/iscxids/labeled/"
      }
-    val (sc,sqlContext) = initSpark()
+    val conf = new SparkConf().setAppName("Simple Application")
+      .setMaster("spark://10.90.67.77:7077")
+    val sc = new SparkContext(conf)
+    sc.setLogLevel("WARN")
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+
     // Array[(String, DataFrame)]
     val dataframes  = loadISCX(sqlContext,datasetPath)
 
@@ -141,12 +145,6 @@ object RandomForest {
 
     val dataModel = preProcessers.fit(filteredData)
     val transformedData = dataModel.transform(filteredData)
-
-    transformedData.write
-      .format("com.databricks.spark.csv")
-      .option("header", "true")
-    .save("/var/spark/datasets/iscx-processed/" + d._1)
-
 
     val pipeline = new Pipeline()
       .setStages(stages)
