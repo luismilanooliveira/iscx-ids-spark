@@ -23,10 +23,7 @@ object RandomForestAllDaysBinary {
     val (sc,sqlContext) = initSpark()
     // Array[(String, DataFrame)]
     val dataframes  = loadISCX(sqlContext,datasetPath).map(_._2)
-    val allDays = dataframes.reduceLeft((a,b) =>
-      a.unionAll(b))
-
-    val data = allDays.select(
+    val days = dataframes.map(_.select(
           "Tag"
         , "appName"
         , "destination"
@@ -43,7 +40,11 @@ object RandomForestAllDaysBinary {
         , "totalDestinationPackets"
         , "totalSourceBytes"
         , "totalSourcePackets"
-      ).na.fill("N/A")
+        ).na.fill("N/A")
+    )
+    val data = days.reduceLeft((a,b) =>
+      a.unionAll(b))
+
 
     // MinMax
     // val (dstByMin, dstByMax) = data.agg(min($"totalDestinationBytes"), max($"totalDestinationBytes")).first match {
